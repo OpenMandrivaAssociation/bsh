@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2005, JPackage Project
+# Copyright (c) 2000-2007, JPackage Project
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,35 +29,42 @@
 #
 
 %define _with_gcj_support 1
-
 %define gcj_support %{?_with_gcj_support:1}%{!?_with_gcj_support:%{?_without_gcj_support:0}%{!?_without_gcj_support:%{?_gcj_support:%{_gcj_support}}%{!?_gcj_support:0}}}
 
-%define section		free
+%define section        free
 
 Name:           bsh
 Version:        1.3.0
-Release:        %mkrel 9.1.1
-Epoch:		0
+Release:        %mkrel 11.0.0
+Epoch:          0
 Summary:        Lightweight Scripting for Java
 License:        LGPL
+Vendor: %{?_vendorinfo:%{_vendorinfo}}%{!?_vendorinfo:%{_vendor}}
+Distribution: %{?_distribution:%{_distribution}}%{!?_distribution:%{_vendor}}
 Source0:        %{name}-%{version}-src.tar.bz2
-Patch0:		%{name}-build.patch
-Patch1:		%{name}-readline.patch
-BuildRequires:  ant, ant-trax, bsf, perl
-Requires:	bsf
-Requires:	jpackage-utils >= 0:1.6
+Source1:        bsh-1.3.0.pom
+Source2:        bsh-bsf-1.3.0.pom
+
+Patch0:         %{name}-build.patch
+#Patch1:         %{name}-readline.patch
+BuildRequires:  ant
+BuildRequires:  bsf
+BuildRequires:  perl
+Requires:       bsf
+Requires:       jpackage-utils >= 0:1.7.2
 #BuildRequires:  libreadline-java
 Url:            http://www.beanshell.org/
 Group:          Development/Java
 %if ! %{gcj_support}
 Buildarch:      noarch
+BuildRequires:  java-devel
 %endif
 Buildroot:      %{_tmppath}/%{name}-%{version}-buildroot
 
 %if %{gcj_support}
-BuildRequires:		java-gcj-compat-devel
-Requires(post):		java-gcj-compat
-Requires(postun):	java-gcj-compat
+BuildRequires:       java-gcj-compat-devel
+Requires(post):      java-gcj-compat
+Requires(postun):    java-gcj-compat
 %endif
 
 %description
@@ -98,9 +105,9 @@ Javadoc for %{name}.
 %package demo
 Summary:        Demo for %{name}
 Group:          Development/Java
-AutoReqProv:	no
+AutoReqProv:    no
 Requires:       %{name} = %{epoch}:%{version}-%{release}
-Requires:	/usr/bin/env
+Requires:       /usr/bin/env
 
 %description demo
 Demonstrations and samples for %{name}.
@@ -109,30 +116,54 @@ Demonstrations and samples for %{name}.
 %setup -q -n BeanShell
 %patch0 -p1
 #%patch1 -p1
-find . -name "*.jar" -exec rm -f {} \;
+for j in $(find . -name "*.jar"); do
+    mv $j $j.no
+done
 # remove all CVS files
 for dir in `find . -type d -name CVS`; do rm -rf $dir; done
 for file in `find . -type f -name .cvsignore`; do rm -rf $file; done
 
 %build
 mkdir -p lib
-#export CLASSPATH=$(build-classpath bsf libreadline-java)
-export CLASSPATH=$(build-classpath bsf)
-export OPT_JAR_LIST=
-# remove servlet dependency
-rm -rf src/bsh/servlet
-%ant -Dexclude-servlet='bsh/servlet/*' compile
-%ant -Dexclude-servlet='bsh/servlet/*' jarall
-%ant -Dexclude-servlet='bsh/servlet/*' javadoc
-%ant -Dexclude-servlet='bsh/servlet/*' bshdoc
-(cd docs/faq && %ant)
-(cd docs/manual && %ant)
+pushd lib
+ln -sf $(build-classpath servlet)
+popd
+%{ant} dist
+(cd docs/faq && %{ant})
+(cd docs/manual && %{ant})
+
 
 %install
+rm -rf $RPM_BUILD_ROOT
 # jars
 install -d -m 755 $RPM_BUILD_ROOT%{_javadir}
-install -m 644 dist/%{name}-%{version}.jar $RPM_BUILD_ROOT%{_javadir}/%{name}-%{version}.jar
+install -m 644 dist/%{name}-%{version}.jar \
+             $RPM_BUILD_ROOT%{_javadir}/%{name}-%{version}.jar
+install -m 644 dist/%{name}-bsf-%{version}.jar \
+             $RPM_BUILD_ROOT%{_javadir}/%{name}-bsf-%{version}.jar
+install -m 644 dist/%{name}-classpath-%{version}.jar \
+             $RPM_BUILD_ROOT%{_javadir}/%{name}-classpath-%{version}.jar
+install -m 644 dist/%{name}-commands-%{version}.jar \
+             $RPM_BUILD_ROOT%{_javadir}/%{name}-commands-%{version}.jar
+install -m 644 dist/%{name}-core-%{version}.jar \
+             $RPM_BUILD_ROOT%{_javadir}/%{name}-core-%{version}.jar
+install -m 644 dist/%{name}-reflect-%{version}.jar \
+             $RPM_BUILD_ROOT%{_javadir}/%{name}-reflect-%{version}.jar
+install -m 644 dist/%{name}-util-%{version}.jar \
+             $RPM_BUILD_ROOT%{_javadir}/%{name}-util-%{version}.jar
+
 (cd $RPM_BUILD_ROOT%{_javadir} && for jar in *-%{version}*; do ln -sf ${jar} ${jar/-%{version}/}; done)
+
+%add_to_maven_depmap %{name} %{name} %{version} JPP %{name}
+%add_to_maven_depmap %{name} %{name}-bsf %{version} JPP %{name}-bsf
+
+# poms
+install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/maven2/poms
+install -pm 644 %{SOURCE1} \
+    $RPM_BUILD_ROOT%{_datadir}/maven2/poms/JPP.%{name}.pom
+install -pm 644 %{SOURCE2} \
+    $RPM_BUILD_ROOT%{_datadir}/maven2/poms/JPP.%{name}-bsf.pom
+
 # manual
 find docs -name ".cvswrappers" -exec rm -f {} \;
 find docs -name "*.xml" -exec rm -f {} \;
@@ -151,8 +182,27 @@ for i in `find tests -name \*.bsh`; do
     chmod 755 $i
   fi
 done
+chmod 755 tests/Template
+cat > one << EOF
+#!/bin/sh
+
+EOF
+cat tests/Interactive/reload/one >> one
+cat one > tests/Interactive/reload/one
+rm one
+cat > two << EOF
+#!/bin/sh
+
+EOF
+cat tests/Interactive/reload/two >> two
+cat two > tests/Interactive/reload/two
+rm two
 install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/%{name}
 cp -pr tests $RPM_BUILD_ROOT%{_datadir}/%{name}
+install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/%{name}/webapps
+install -m 644 dist/bshservlet.war $RPM_BUILD_ROOT%{_datadir}/%{name}/webapps
+install -m 644 dist/bshservlet-wbsh.war $RPM_BUILD_ROOT%{_datadir}/%{name}/webapps
+
 # scripts
 install -d $RPM_BUILD_ROOT%{_bindir}
 
@@ -205,27 +255,31 @@ EOF
 cat scripts/bshdoc.bsh >> $RPM_BUILD_ROOT%{_bindir}/%{name}doc
 
 %if %{gcj_support}
-%{_bindir}/aot-compile-rpm
+export CLASSPATH=$(build-classpath gnu-crypto)
+%{_bindir}/aot-compile-rpm \
+   --exclude %{_datadir}/%{name}/webapps/bshservlet.war \
+   --exclude %{_datadir}/%{name}/webapps/bshservlet-wbsh.war
 %endif
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post javadoc
-rm -f %{_javadocdir}/%{name}
-ln -s %{name}-%{version} %{_javadocdir}/%{name}
-
-%postun javadoc
-if [ "$1" = "0" ]; then
-    rm -f %{_javadocdir}/%{name}
-fi
-
-%if %{gcj_support}
 %post
-%{update_gcjdb}
+%update_maven_depmap
+%if %{gcj_support}
+if [ -x %{_bindir}/rebuild-gcj-db ]
+then
+  %{_bindir}/rebuild-gcj-db
+fi
+%endif
 
 %postun
-%{clean_gcjdb}
+%update_maven_depmap
+%if %{gcj_support}
+if [ -x %{_bindir}/rebuild-gcj-db ]
+then
+  %{_bindir}/rebuild-gcj-db
+fi
 %endif
 
 %files
@@ -235,7 +289,9 @@ fi
 %attr(0755,root,root) %{_bindir}/%{name}doc
 %{_javadir}/*
 %dir %{_datadir}/%{name}
-
+%{_datadir}/%{name}/webapps
+%{_datadir}/maven2/poms/*
+%{_mavendepmapfragdir}
 %if %{gcj_support}
 %attr(-,root,root) %{_libdir}/gcj/%{name}
 %endif
@@ -250,4 +306,5 @@ fi
 
 %files demo
 %defattr(-,root,root)
-%{_datadir}/%{name}/*
+%doc tests/README.txt tests/Interactive/README
+%{_datadir}/%{name}/tests
