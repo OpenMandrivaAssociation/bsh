@@ -124,6 +124,7 @@ for file in `find . -type f -name .cvsignore`; do rm -rf $file; done
 %build
 mkdir -p lib
 pushd lib
+ln -sf $(build-classpath bsf)
 ln -sf $(build-classpath servlet)
 popd
 %{ant} dist
