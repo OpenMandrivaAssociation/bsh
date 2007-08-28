@@ -35,12 +35,10 @@
 
 Name:           bsh
 Version:        1.3.0
-Release:        %mkrel 11.0.0
+Release:        %mkrel 11.0.1
 Epoch:          0
 Summary:        Lightweight Scripting for Java
 License:        LGPL
-Vendor: %{?_vendorinfo:%{_vendorinfo}}%{!?_vendorinfo:%{_vendor}}
-Distribution: %{?_distribution:%{_distribution}}%{!?_distribution:%{_vendor}}
 Source0:        %{name}-%{version}-src.tar.bz2
 Source1:        bsh-1.3.0.pom
 Source2:        bsh-bsf-1.3.0.pom
