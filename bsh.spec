@@ -35,7 +35,7 @@
 
 Name:           bsh
 Version:        1.3.0
-Release:        %mkrel 11.0.1
+Release:        %mkrel 11.0.2
 Epoch:          0
 Summary:        Lightweight Scripting for Java
 License:        LGPL
@@ -94,8 +94,6 @@ Documentation for %{name}.
 %package javadoc
 Summary:        Javadoc for %{name}
 Group:          Development/Java
-Requires(post):   /bin/rm,/bin/ln
-Requires(postun): /bin/rm
 
 %description javadoc
 Javadoc for %{name}.
@@ -171,9 +169,12 @@ find docs -name "*.log" -exec rm -f {} \;
 (cd docs/manual && mv html/* .)
 (cd docs/manual && rm -rf html)
 (cd docs/manual && rm -rf xsl)
+
 # javadoc
 install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
 cp -pr javadoc/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
+ln -s %{name}-%{version} $RPM_BUILD_ROOT%{_javadocdir}/%{name}
+
 # demo
 for i in `find tests -name \*.bsh`; do
   perl -p -i -e 's,^\n?#!(/(usr/)?bin/java bsh\.Interpreter|/bin/sh),#!/usr/bin/env %{_bindir}/%{name},' $i
@@ -266,19 +267,13 @@ rm -rf $RPM_BUILD_ROOT
 %post
 %update_maven_depmap
 %if %{gcj_support}
-if [ -x %{_bindir}/rebuild-gcj-db ]
-then
-  %{_bindir}/rebuild-gcj-db
-fi
+%{update_gcjdb}
 %endif
 
 %postun
 %update_maven_depmap
 %if %{gcj_support}
-if [ -x %{_bindir}/rebuild-gcj-db ]
-then
-  %{_bindir}/rebuild-gcj-db
-fi
+%{clean_gcjdb}
 %endif
 
 %files
@@ -290,7 +285,7 @@ fi
 %dir %{_datadir}/%{name}
 %{_datadir}/%{name}/webapps
 %{_datadir}/maven2/poms/*
-%{_mavendepmapfragdir}
+%config(noreplace) %{_mavendepmapfragdir}/*
 %if %{gcj_support}
 %attr(-,root,root) %{_libdir}/gcj/%{name}
 %endif
@@ -302,6 +297,7 @@ fi
 %files javadoc
 %defattr(-,root,root)
 %{_javadocdir}/%{name}-%{version}
+%{_javadocdir}/%{name}
 
 %files demo
 %defattr(-,root,root)
