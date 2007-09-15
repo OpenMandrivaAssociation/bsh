@@ -35,7 +35,7 @@
 
 Name:           bsh
 Version:        1.3.0
-Release:        %mkrel 11.0.2
+Release:        %mkrel 11.0.3
 Epoch:          0
 Summary:        Lightweight Scripting for Java
 License:        LGPL
@@ -61,8 +61,6 @@ Buildroot:      %{_tmppath}/%{name}-%{version}-buildroot
 
 %if %{gcj_support}
 BuildRequires:       java-gcj-compat-devel
-Requires(post):      java-gcj-compat
-Requires(postun):    java-gcj-compat
 %endif
 
 %description
