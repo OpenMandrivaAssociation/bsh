@@ -35,7 +35,7 @@
 
 Name:           bsh
 Version:        1.3.0
-Release:        %mkrel 11.0.3
+Release:        %mkrel 11.0.4
 Epoch:          0
 Summary:        Lightweight Scripting for Java
 License:        LGPL
@@ -48,6 +48,7 @@ Patch0:         %{name}-build.patch
 BuildRequires:  ant
 BuildRequires:  bsf
 BuildRequires:  perl
+BuildRequires:	java-rpmbuild
 Requires:       bsf
 Requires:       jpackage-utils >= 0:1.7.2
 #BuildRequires:  libreadline-java
