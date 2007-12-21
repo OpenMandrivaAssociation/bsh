@@ -58,6 +58,7 @@ Group:          Development/Java
 Buildarch:      noarch
 BuildRequires:  java-devel
 %endif
+Buildroot:      %{_tmppath}/%{name}-%{version}-buildroot
 
 %if %{gcj_support}
 BuildRequires:       java-gcj-compat-devel
