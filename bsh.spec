@@ -28,8 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-%define _with_gcj_support 1
-%define gcj_support %{?_with_gcj_support:1}%{!?_with_gcj_support:%{?_without_gcj_support:0}%{!?_without_gcj_support:%{?_gcj_support:%{_gcj_support}}%{!?_gcj_support:0}}}
+%define gcj_support 0
 
 %define section        free
 
@@ -254,7 +253,6 @@ EOF
 cat scripts/bshdoc.bsh >> $RPM_BUILD_ROOT%{_bindir}/%{name}doc
 
 %if %{gcj_support}
-export CLASSPATH=$(build-classpath gnu-crypto)
 %{_bindir}/aot-compile-rpm \
    --exclude %{_datadir}/%{name}/webapps/bshservlet.war \
    --exclude %{_datadir}/%{name}/webapps/bshservlet-wbsh.war
@@ -285,9 +283,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/%{name}/webapps
 %{_datadir}/maven2/poms/*
 %config(noreplace) %{_mavendepmapfragdir}/*
-%if %{gcj_support}
-%attr(-,root,root) %{_libdir}/gcj/%{name}
-%endif
+%{gcj_files}
 
 %files manual
 %defattr(-,root,root)
