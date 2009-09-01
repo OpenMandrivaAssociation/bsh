@@ -34,7 +34,7 @@
 
 Name:           bsh
 Version:        1.3.0
-Release:        %mkrel 5.0.4
+Release:        %mkrel 5.0.5
 Epoch:          0
 Summary:        Lightweight Scripting for Java
 License:        LGPL
