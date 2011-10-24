@@ -28,40 +28,31 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-%define gcj_support 0
-
-%define section        free
-
 Name:           bsh
 Version:        1.3.0
-Release:        %mkrel 5.0.5
-Epoch:          0
+Release:        18
 Summary:        Lightweight Scripting for Java
-License:        LGPL
+License:        SPL or LGPLv2+
 Source0:        %{name}-%{version}-src.tar.bz2
+#cvs -d:pserver:anonymous@beanshell.cvs.sourceforge.net:/cvsroot/beanshell login
+#cvs -z3 -d:pserver:anonymous@beanshell.cvs.sourceforge.net:/cvsroot/beanshell export -r rel_1_3_0_final BeanShell
+#tar cjf bsh-1.3.0-src.tar.bz2 BeanShell
 Source1:        bsh-1.3.0.pom
 Source2:        bsh-bsf-1.3.0.pom
+Source3:        %{name}-desktop.desktop
 
 Patch0:         %{name}-build.patch
-#Patch1:         %{name}-readline.patch
-BuildRequires:  ant
-BuildRequires:  bsf
-BuildRequires:  perl
-BuildRequires:	java-rpmbuild
+Patch1:         %{name}-xsl-fixes.patch
+BuildRequires:  java >= 0:1.6.0
+BuildRequires:  ant, bsf, ant-trax, ImageMagick, desktop-file-utils
+BuildRequires:  servlet
+Requires:       java >= 0:1.6.0
 Requires:       bsf
-Requires:       jpackage-utils >= 0:1.7.2
-#BuildRequires:  libreadline-java
-Url:            http://www.beanshell.org/
+Requires:       jpackage-utils >= 0:1.7.5-3.9
+URL:            http://www.beanshell.org/
 Group:          Development/Java
-%if ! %{gcj_support}
-Buildarch:      noarch
-BuildRequires:  java-devel
-%endif
-Buildroot:      %{_tmppath}/%{name}-%{version}-buildroot
-
-%if %{gcj_support}
-BuildRequires:       java-gcj-compat-devel
-%endif
+BuildArch:      noarch
+BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
 BeanShell is a small, free, embeddable, Java source interpreter with
@@ -100,33 +91,55 @@ Javadoc for %{name}.
 Summary:        Demo for %{name}
 Group:          Development/Java
 AutoReqProv:    no
-Requires:       %{name} = %{epoch}:%{version}-%{release}
+Requires:       %{name} = %{version}-%{release}
 Requires:       /usr/bin/env
 
 %description demo
 Demonstrations and samples for %{name}.
 
+%package utils
+Summary:        %{name} utilities
+Group:          Development/Java
+Requires:       %{name} = %{version}-%{release}
+Requires:       jline
+Provides:       %{name}-desktop = %{version}-%{release}
+Obsoletes:      %{name}-desktop < 0:1.3.0-17
+# So that yum will pull this in on base package upgrades from < 0:1.3.0-17
+# (bsh and bshdoc scripts moved here in -17):
+Obsoletes:      %{name} < 0:1.3.0-17
+
+%description utils
+%{name} utilities.
+
 %prep
 %setup -q -n BeanShell
 %patch0 -p1
-#%patch1 -p1
+%patch1 -p1
 for j in $(find . -name "*.jar"); do
     mv $j $j.no
 done
 # remove all CVS files
 for dir in `find . -type d -name CVS`; do rm -rf $dir; done
 for file in `find . -type f -name .cvsignore`; do rm -rf $file; done
+# fix rpmlint spurious-executable-perm warnings
+for i in backbutton forwardbutton homebutton remoteconsole upbutton; do
+    chmod 644 docs/images/$i.gif
+done
 
 %build
 mkdir -p lib
 pushd lib
 ln -sf $(build-classpath bsf)
 ln -sf $(build-classpath servlet)
+ln -sf $(build-classpath xalan-j2-serializer)
 popd
-%{ant} dist
-(cd docs/faq && %{ant})
-(cd docs/manual && %{ant})
-
+export CLASSPATH=$CLASSPATH:$(build-classpath xalan-j2-serializer)
+ant="ant -Dant.build.javac.source=1.5"
+$ant dist
+%ifnarch ppc64 s390x
+(cd docs/faq && $ant)
+(cd docs/manual && $ant)
+%endif
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -148,30 +161,36 @@ install -m 644 dist/%{name}-util-%{version}.jar \
              $RPM_BUILD_ROOT%{_javadir}/%{name}-util-%{version}.jar
 
 (cd $RPM_BUILD_ROOT%{_javadir} && for jar in *-%{version}*; do ln -sf ${jar} ${jar/-%{version}/}; done)
-
 %add_to_maven_depmap %{name} %{name} %{version} JPP %{name}
 %add_to_maven_depmap %{name} %{name}-bsf %{version} JPP %{name}-bsf
 
 # poms
 install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/maven2/poms
 install -pm 644 %{SOURCE1} \
-    $RPM_BUILD_ROOT%{_datadir}/maven2/poms/JPP.%{name}.pom
+    $RPM_BUILD_ROOT%{_datadir}/maven2/poms/JPP-%{name}.pom
 install -pm 644 %{SOURCE2} \
-    $RPM_BUILD_ROOT%{_datadir}/maven2/poms/JPP.%{name}-bsf.pom
+    $RPM_BUILD_ROOT%{_datadir}/maven2/poms/JPP-%{name}-bsf.pom
 
 # manual
 find docs -name ".cvswrappers" -exec rm -f {} \;
 find docs -name "*.xml" -exec rm -f {} \;
 find docs -name "*.xsl" -exec rm -f {} \;
 find docs -name "*.log" -exec rm -f {} \;
+%ifnarch ppc64 s390x
 (cd docs/manual && mv html/* .)
 (cd docs/manual && rm -rf html)
 (cd docs/manual && rm -rf xsl)
-
+%endif
 # javadoc
 install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
 cp -pr javadoc/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
 ln -s %{name}-%{version} $RPM_BUILD_ROOT%{_javadocdir}/%{name}
+# menu entry
+desktop-file-install --vendor=fedora --mode=644 \
+  --dir=$RPM_BUILD_ROOT%{_datadir}/applications %{SOURCE3}
+install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/16x16/apps
+convert src/bsh/util/lib/icon.gif \
+  $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/16x16/apps/bsh.png
 
 # demo
 for i in `find tests -name \*.bsh`; do
@@ -204,13 +223,20 @@ install -m 644 dist/bshservlet-wbsh.war $RPM_BUILD_ROOT%{_datadir}/%{name}/webap
 # scripts
 install -d $RPM_BUILD_ROOT%{_bindir}
 
-cat > $RPM_BUILD_ROOT%{_bindir}/%{name} << EOF
+function bsh_script() {
+    local jars=%{name}.jar runclass=
+    if [ $2 = jline.ConsoleRunner ] ; then
+        jars="$jars jline.jar"
+        runclass=bsh.Interpreter
+    fi
+cat > $RPM_BUILD_ROOT%{_bindir}/$1 << EOF
 #!/bin/sh
 #
-# %{name} script
+# $1 script
 # JPackage Project (http://jpackage.sourceforge.net)
 
 # Source functions library
+_prefer_jre=true
 . %{_datadir}/java-utils/java-functions
 
 # Source system prefs
@@ -224,18 +250,12 @@ if [ -f \$HOME/.%{name}rc ] ; then
 fi
 
 # Configuration
-MAIN_CLASS=bsh.Interpreter
+MAIN_CLASS=$2
 if [ -n "\$BSH_DEBUG" ]; then
   BASE_FLAGS=-Ddebug=true
 fi
 
-BASE_JARS="%{name}.jar"
-
-#if [ -f /usr/lib/libJavaReadline.so ]; then
-#  BASE_FLAGS="$BASE_FLAGS -Djava.library.path=/usr/lib"
-#  BASE_FLAGS="\$BASE_FLAGS -Dbsh.console.readlinelib=GnuReadline"
-#  BASE_JARS="\$BASE_JARS libreadline-java.jar"
-#fi
+BASE_JARS="$jars"
 
 # Set parameters
 set_jvm
@@ -244,50 +264,53 @@ set_flags \$BASE_FLAGS
 set_options \$BASE_OPTIONS
 
 # Let's start
-run "\$@"
+run $runclass "\$@"
 EOF
+}
+
+bsh_script bsh jline.ConsoleRunner
+bsh_script bsh-desktop bsh.Console
 
 cat > $RPM_BUILD_ROOT%{_bindir}/%{name}doc << EOF
 #!/usr/bin/env %{_bindir}/%{name}
 EOF
 cat scripts/bshdoc.bsh >> $RPM_BUILD_ROOT%{_bindir}/%{name}doc
 
-%if %{gcj_support}
-%{_bindir}/aot-compile-rpm \
-   --exclude %{_datadir}/%{name}/webapps/bshservlet.war \
-   --exclude %{_datadir}/%{name}/webapps/bshservlet-wbsh.war
-%endif
-
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+%post utils
+touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
+
 %post
 %update_maven_depmap
-%if %{gcj_support}
-%{update_gcjdb}
-%endif
+
+%postun utils
+if [ $1 -eq 0 ] ; then
+    touch --no-create %{_datadir}/icons/hicolor &>/dev/null
+    gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
+fi
 
 %postun
 %update_maven_depmap
-%if %{gcj_support}
-%{clean_gcjdb}
-%endif
+
+%posttrans utils
+gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 %files
 %defattr(-,root,root)
 %doc src/Changes.html src/License.txt src/README.txt
-%attr(0755,root,root) %{_bindir}/%{name}
-%attr(0755,root,root) %{_bindir}/%{name}doc
 %{_javadir}/*
 %dir %{_datadir}/%{name}
 %{_datadir}/%{name}/webapps
 %{_datadir}/maven2/poms/*
-%config(noreplace) %{_mavendepmapfragdir}/*
-%{gcj_files}
+%{_mavendepmapfragdir}
 
+%ifnarch ppc64 s390x
 %files manual
 %defattr(-,root,root)
 %doc docs/*
+%endif
 
 %files javadoc
 %defattr(-,root,root)
@@ -297,4 +320,11 @@ rm -rf $RPM_BUILD_ROOT
 %files demo
 %defattr(-,root,root)
 %doc tests/README.txt tests/Interactive/README
-%{_datadir}/%{name}/tests
+%{_datadir}/%{name}/*
+
+%files utils
+%defattr(-,root,root)
+%attr(0755,root,root) %{_bindir}/%{name}*
+%{_datadir}/applications/*%{name}-desktop.desktop
+%{_datadir}/icons/hicolor/*x*/apps/%{name}.png
+
