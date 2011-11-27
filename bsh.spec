@@ -30,7 +30,7 @@
 
 Name:           bsh
 Version:        1.3.0
-Release:        18
+Release:        20
 Summary:        Lightweight Scripting for Java
 License:        SPL or LGPLv2+
 Source0:        %{name}-%{version}-src.tar.bz2
