@@ -30,7 +30,7 @@
 
 Name:           bsh
 Version:        1.3.0
-Release:        20
+Release:        21
 Summary:        Lightweight Scripting for Java
 License:        SPL or LGPLv2+
 Source0:        %{name}-%{version}-src.tar.bz2
@@ -44,15 +44,16 @@ Source3:        %{name}-desktop.desktop
 Patch0:         %{name}-build.patch
 Patch1:         %{name}-xsl-fixes.patch
 BuildRequires:  java >= 0:1.6.0
-BuildRequires:  ant, bsf, ant-trax, ImageMagick, desktop-file-utils
+BuildRequires:  ant, bsf, ant-trax, imagemagick, desktop-file-utils
 BuildRequires:  servlet
+BuildRequires:  xalan-j2
+BuildRequires:  xml-commons-apis
 Requires:       java >= 0:1.6.0
 Requires:       bsf
 Requires:       jpackage-utils >= 0:1.7.5-3.9
 URL:            http://www.beanshell.org/
 Group:          Development/Java
 BuildArch:      noarch
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
 BeanShell is a small, free, embeddable, Java source interpreter with
@@ -142,7 +143,6 @@ $ant dist
 %endif
 
 %install
-rm -rf $RPM_BUILD_ROOT
 # jars
 install -d -m 755 $RPM_BUILD_ROOT%{_javadir}
 install -m 644 dist/%{name}-%{version}.jar \
@@ -197,7 +197,12 @@ for i in `find tests -name \*.bsh`; do
   perl -p -i -e 's,^\n?#!(/(usr/)?bin/java bsh\.Interpreter|/bin/sh),#!/usr/bin/env %{_bindir}/%{name},' $i
   if head -1 $i | grep '#!/usr/bin/env %{_bindir}/%{name}' >/dev/null; then
     chmod 755 $i
+  else
+    chmod a+r $i
   fi
+done
+for i in `find tests -name \*.java -o -name \*.gif -o -name \*.txt`; do
+  chmod 644 $i
 done
 chmod 755 tests/Template
 cat > one << EOF
@@ -276,9 +281,6 @@ cat > $RPM_BUILD_ROOT%{_bindir}/%{name}doc << EOF
 EOF
 cat scripts/bshdoc.bsh >> $RPM_BUILD_ROOT%{_bindir}/%{name}doc
 
-%clean
-rm -rf $RPM_BUILD_ROOT
-
 %post utils
 touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
 
@@ -320,7 +322,7 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %files demo
 %defattr(-,root,root)
 %doc tests/README.txt tests/Interactive/README
-%{_datadir}/%{name}/*
+%{_datadir}/%{name}/tests/*
 
 %files utils
 %defattr(-,root,root)
@@ -328,3 +330,123 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_datadir}/applications/*%{name}-desktop.desktop
 %{_datadir}/icons/hicolor/*x*/apps/%{name}.png
 
+
+
+%changelog
+* Sun Nov 27 2011 Guilherme Moro <guilherme@mandriva.com> 1.3.0-20
++ Revision: 733861
+- rebuild
+- imported package bsh
+
+  + Christophe Fergeau <cfergeau@mandriva.com>
+    - rebuild
+
+  + Thierry Vignaud <tv@mandriva.org>
+    - rebuild early 2009.0 package (before pixel changes)
+
+* Fri May 23 2008 Alexander Kurtakov <akurtakov@mandriva.org> 0:1.3.0-11.0.4mdv2009.0
++ Revision: 210153
+- remove gnu-crypto references and disable gcj_support
+
+  + Olivier Blin <blino@mandriva.org>
+    - restore BuildRoot
+
+  + Thierry Vignaud <tv@mandriva.org>
+    - kill re-definition of %%buildroot on Pixel's request
+
+* Sun Dec 16 2007 Anssi Hannula <anssi@mandriva.org> 0:1.3.0-11.0.4mdv2008.1
++ Revision: 120806
+- buildrequires java-rpmbuild
+
+* Sat Sep 15 2007 Anssi Hannula <anssi@mandriva.org> 0:1.3.0-11.0.3mdv2008.0
++ Revision: 87263
+- rebuild to filter out autorequires of GCJ AOT objects
+- remove unnecessary Requires(post) on java-gcj-compat
+
+* Wed Sep 05 2007 David Walluck <walluck@mandriva.org> 0:1.3.0-11.0.2mdv2008.0
++ Revision: 79666
+- add javadoc link
+- fix maven dir ownership
+- fix gcj scriptlets
+- remove file requires
+
+* Tue Aug 28 2007 David Walluck <walluck@mandriva.org> 0:1.3.0-11.0.1mdv2008.0
++ Revision: 72560
+- link to bsf
+- fix Vendor and Distribution
+- sync with jpackage
+- Import bsh
+
+
+
+* Mon Aug 07 2006 David Walluck <walluck@mandriva.org> 0:1.3.0-9.1.1mdv2007.0
+- update and rebuild
+
+* Mon Jun 05 2006 David Walluck <walluck@mandriva.org> 0:1.3.0-6.3mdv2007.0
+- rebuild for libgcj.so.7
+- own %%{_libdir}/gcj/%%{name}
+
+* Fri Dec 02 2005 David Walluck <walluck@mandriva.org> 0:1.3.0-6.2mdk
+- add post scripts
+
+* Fri Dec 02 2005 David Walluck <walluck@mandriva.org> 0:1.3.0-6.1mdk
+- aot-compile
+
+* Sat Sep 10 2005 David Walluck <walluck@mandriva.org> 0:1.3.0-5.1mdk
+- release
+
+* Thu Jun 16 2005 Gary Benson <gbenson@redhat.com> 0:1.3.0-5jpp_1fc
+- Build into Fedora.
+
+* Thu Mar  4 2004 Frank Ch. Eigler <fche@redhat.com> 0:1.3.0-5jpp_1rh
+- RH vacuuming
+- added bsf build-prereq
+
+* Mon Jan 26 2004 David Walluck <david@anti-microsoft.org> 0:1.3.0-5jpp
+- really drop readline..patch
+
+* Sun Jan 25 2004 David Walluck <david@anti-microsoft.org> 0:1.3.0-4jpp
+- drop readline..patch
+
+* Wed Jan 21 2004 David Walluck <david@anti-microsoft.org> 0:1.3.0-3jpp
+- port libreadline-java patch to new bsh
+
+* Tue Jan 20 2004 David Walluck <david@anti-microsoft.org> 0:1.3.0-2jpp
+- add Distribution tag
+
+* Tue Jan 20 2004 David Walluck <david@anti-microsoft.org> 0:1.3.0-1jpp
+- 1.3.0
+- remove bsf patch (fixed upstream)
+- add epoch to demo package Requires
+
+* Fri Apr 12 2003 David Walluck <david@anti-microsoft.org> 0:1.2-0.b8.4jpp
+- fix strange permissions
+
+* Fri Apr 11 2003 David Walluck <david@anti-microsoft.org> 0:1.2-0.b8.3jpp
+- rebuild for JPackage 1.5
+- add bsf..patch
+
+* Sat Feb 01 2003 David Walluck <david@anti-microsoft.org> 1.2-0.b8.2jpp
+- remove servlet dependency (if anyone wants to add this as a separate
+  package and do the tomcat integration, be my guest)
+
+* Thu Jan 23 2003 David Walluck <david@anti-microsoft.org> 1.2-0.b8.1jpp
+- rename to bsh
+- add manual
+- add Changes.html to %%doc
+- add bsh and bshdoc scripts
+- add %%dir %%{_datadir}/%%{name} to main package
+- correct test interpreter and make bsh files executable
+
+* Mon Jan 21 2002 Guillaume Rousse <guillomovitch@users.sourceforge.net> 1.01-3jpp
+- really section macro
+
+* Sun Jan 20 2002 Guillaume Rousse <guillomovitch@users.sourceforge.net> 1.01-2jpp
+- additional sources in individual archives
+- versioned dir for javadoc
+- no dependencies for javadoc package
+- stricter dependency for demo package
+- section macro
+
+* Tue Dec 18 2001 Guillaume Rousse <guillomovitch@users.sourceforge.net> 1.01-1jpp
+- first JPackage release
