@@ -1,2 +1,4 @@
 sources:
-  "bsh-1.3.0-src.tar.bz2": 7b9a2e56d23e22999aa5db344e32ff60367c4858
+  bsh-1.3.0-src.tar.bz2: 7b9a2e56d23e22999aa5db344e32ff60367c4858
+  bsh-1.3.0.pom: 60d71527898f35b007284c9a13875ebf1eeb8baa
+  bsh-bsf-1.3.0.pom: 38a6c4f1e507cdc58e6a7d52679dd165da72552e

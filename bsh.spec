@@ -1,36 +1,6 @@
-# Copyright (c) 2000-2007, JPackage Project
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-#
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the
-#    distribution.
-# 3. Neither the name of the JPackage Project nor the names of its
-#    contributors may be used to endorse or promote products derived
-#    from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-
 Name:           bsh
 Version:        1.3.0
-Release:        21
+Release:        23
 Summary:        Lightweight Scripting for Java
 License:        SPL or LGPLv2+
 Source0:        %{name}-%{version}-src.tar.bz2
@@ -43,14 +13,15 @@ Source3:        %{name}-desktop.desktop
 
 Patch0:         %{name}-build.patch
 Patch1:         %{name}-xsl-fixes.patch
-BuildRequires:  java >= 0:1.6.0
-BuildRequires:  ant, bsf, ant-trax, imagemagick, desktop-file-utils
+BuildRequires:  java-1.6.0-openjdk-devel >= 0:1.6.0
+BuildRequires:  ant bsf imagemagick desktop-file-utils
 BuildRequires:  servlet
 BuildRequires:  xalan-j2
 BuildRequires:  xml-commons-apis
+BuildRequires:	jpackage-utils
+Requires:	jpackage-utils
 Requires:       java >= 0:1.6.0
 Requires:       bsf
-Requires:       jpackage-utils >= 0:1.7.5-3.9
 URL:            http://www.beanshell.org/
 Group:          Development/Java
 BuildArch:      noarch
