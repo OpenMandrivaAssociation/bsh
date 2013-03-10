@@ -1,8 +1,10 @@
+Summary:        Lightweight Scripting for Java
 Name:           bsh
 Version:        1.3.0
 Release:        23
-Summary:        Lightweight Scripting for Java
 License:        SPL or LGPLv2+
+Group:          Development/Java
+Url:            http://www.beanshell.org/
 Source0:        %{name}-%{version}-src.tar.bz2
 #cvs -d:pserver:anonymous@beanshell.cvs.sourceforge.net:/cvsroot/beanshell login
 #cvs -z3 -d:pserver:anonymous@beanshell.cvs.sourceforge.net:/cvsroot/beanshell export -r rel_1_3_0_final BeanShell
@@ -10,9 +12,10 @@ Source0:        %{name}-%{version}-src.tar.bz2
 Source1:        bsh-1.3.0.pom
 Source2:        bsh-bsf-1.3.0.pom
 Source3:        %{name}-desktop.desktop
-
 Patch0:         %{name}-build.patch
 Patch1:         %{name}-xsl-fixes.patch
+BuildArch:      noarch
+
 BuildRequires:  java-1.6.0-openjdk-devel >= 0:1.6.0
 BuildRequires:  ant bsf imagemagick desktop-file-utils
 BuildRequires:  servlet
@@ -22,9 +25,6 @@ BuildRequires:	jpackage-utils
 Requires:	jpackage-utils
 Requires:       java >= 0:1.6.0
 Requires:       bsf
-URL:            http://www.beanshell.org/
-Group:          Development/Java
-BuildArch:      noarch
 
 %description
 BeanShell is a small, free, embeddable, Java source interpreter with
@@ -115,32 +115,32 @@ $ant dist
 
 %install
 # jars
-install -d -m 755 $RPM_BUILD_ROOT%{_javadir}
+install -d -m 755 %{buildroot}%{_javadir}
 install -m 644 dist/%{name}-%{version}.jar \
-             $RPM_BUILD_ROOT%{_javadir}/%{name}-%{version}.jar
+             %{buildroot}%{_javadir}/%{name}-%{version}.jar
 install -m 644 dist/%{name}-bsf-%{version}.jar \
-             $RPM_BUILD_ROOT%{_javadir}/%{name}-bsf-%{version}.jar
+             %{buildroot}%{_javadir}/%{name}-bsf-%{version}.jar
 install -m 644 dist/%{name}-classpath-%{version}.jar \
-             $RPM_BUILD_ROOT%{_javadir}/%{name}-classpath-%{version}.jar
+             %{buildroot}%{_javadir}/%{name}-classpath-%{version}.jar
 install -m 644 dist/%{name}-commands-%{version}.jar \
-             $RPM_BUILD_ROOT%{_javadir}/%{name}-commands-%{version}.jar
+             %{buildroot}%{_javadir}/%{name}-commands-%{version}.jar
 install -m 644 dist/%{name}-core-%{version}.jar \
-             $RPM_BUILD_ROOT%{_javadir}/%{name}-core-%{version}.jar
+             %{buildroot}%{_javadir}/%{name}-core-%{version}.jar
 install -m 644 dist/%{name}-reflect-%{version}.jar \
-             $RPM_BUILD_ROOT%{_javadir}/%{name}-reflect-%{version}.jar
+             %{buildroot}%{_javadir}/%{name}-reflect-%{version}.jar
 install -m 644 dist/%{name}-util-%{version}.jar \
-             $RPM_BUILD_ROOT%{_javadir}/%{name}-util-%{version}.jar
+             %{buildroot}%{_javadir}/%{name}-util-%{version}.jar
 
-(cd $RPM_BUILD_ROOT%{_javadir} && for jar in *-%{version}*; do ln -sf ${jar} ${jar/-%{version}/}; done)
+(cd %{buildroot}%{_javadir} && for jar in *-%{version}*; do ln -sf ${jar} ${jar/-%{version}/}; done)
 %add_to_maven_depmap %{name} %{name} %{version} JPP %{name}
 %add_to_maven_depmap %{name} %{name}-bsf %{version} JPP %{name}-bsf
 
 # poms
-install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/maven2/poms
+install -d -m 755 %{buildroot}%{_datadir}/maven2/poms
 install -pm 644 %{SOURCE1} \
-    $RPM_BUILD_ROOT%{_datadir}/maven2/poms/JPP-%{name}.pom
+    %{buildroot}%{_datadir}/maven2/poms/JPP-%{name}.pom
 install -pm 644 %{SOURCE2} \
-    $RPM_BUILD_ROOT%{_datadir}/maven2/poms/JPP-%{name}-bsf.pom
+    %{buildroot}%{_datadir}/maven2/poms/JPP-%{name}-bsf.pom
 
 # manual
 find docs -name ".cvswrappers" -exec rm -f {} \;
@@ -153,15 +153,15 @@ find docs -name "*.log" -exec rm -f {} \;
 (cd docs/manual && rm -rf xsl)
 %endif
 # javadoc
-install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
-cp -pr javadoc/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
-ln -s %{name}-%{version} $RPM_BUILD_ROOT%{_javadocdir}/%{name}
+install -d -m 755 %{buildroot}%{_javadocdir}/%{name}-%{version}
+cp -pr javadoc/* %{buildroot}%{_javadocdir}/%{name}-%{version}
+ln -s %{name}-%{version} %{buildroot}%{_javadocdir}/%{name}
 # menu entry
 desktop-file-install --vendor=fedora --mode=644 \
-  --dir=$RPM_BUILD_ROOT%{_datadir}/applications %{SOURCE3}
-install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/16x16/apps
+  --dir=%{buildroot}%{_datadir}/applications %{SOURCE3}
+install -d -m 755 %{buildroot}%{_datadir}/icons/hicolor/16x16/apps
 convert src/bsh/util/lib/icon.gif \
-  $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/16x16/apps/bsh.png
+  %{buildroot}%{_datadir}/icons/hicolor/16x16/apps/bsh.png
 
 # demo
 for i in `find tests -name \*.bsh`; do
@@ -190,14 +190,14 @@ EOF
 cat tests/Interactive/reload/two >> two
 cat two > tests/Interactive/reload/two
 rm two
-install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/%{name}
-cp -pr tests $RPM_BUILD_ROOT%{_datadir}/%{name}
-install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/%{name}/webapps
-install -m 644 dist/bshservlet.war $RPM_BUILD_ROOT%{_datadir}/%{name}/webapps
-install -m 644 dist/bshservlet-wbsh.war $RPM_BUILD_ROOT%{_datadir}/%{name}/webapps
+install -d -m 755 %{buildroot}%{_datadir}/%{name}
+cp -pr tests %{buildroot}%{_datadir}/%{name}
+install -d -m 755 %{buildroot}%{_datadir}/%{name}/webapps
+install -m 644 dist/bshservlet.war %{buildroot}%{_datadir}/%{name}/webapps
+install -m 644 dist/bshservlet-wbsh.war %{buildroot}%{_datadir}/%{name}/webapps
 
 # scripts
-install -d $RPM_BUILD_ROOT%{_bindir}
+install -d %{buildroot}%{_bindir}
 
 function bsh_script() {
     local jars=%{name}.jar runclass=
@@ -205,7 +205,7 @@ function bsh_script() {
         jars="$jars jline.jar"
         runclass=bsh.Interpreter
     fi
-cat > $RPM_BUILD_ROOT%{_bindir}/$1 << EOF
+cat > %{buildroot}%{_bindir}/$1 << EOF
 #!/bin/sh
 #
 # $1 script
@@ -247,10 +247,10 @@ EOF
 bsh_script bsh jline.ConsoleRunner
 bsh_script bsh-desktop bsh.Console
 
-cat > $RPM_BUILD_ROOT%{_bindir}/%{name}doc << EOF
+cat > %{buildroot}%{_bindir}/%{name}doc << EOF
 #!/usr/bin/env %{_bindir}/%{name}
 EOF
-cat scripts/bshdoc.bsh >> $RPM_BUILD_ROOT%{_bindir}/%{name}doc
+cat scripts/bshdoc.bsh >> %{buildroot}%{_bindir}/%{name}doc
 
 %post utils
 touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
@@ -271,7 +271,6 @@ fi
 gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 %files
-%defattr(-,root,root)
 %doc src/Changes.html src/License.txt src/README.txt
 %{_javadir}/*
 %dir %{_datadir}/%{name}
@@ -281,143 +280,19 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 %ifnarch ppc64 s390x
 %files manual
-%defattr(-,root,root)
 %doc docs/*
 %endif
 
 %files javadoc
-%defattr(-,root,root)
 %{_javadocdir}/%{name}-%{version}
 %{_javadocdir}/%{name}
 
 %files demo
-%defattr(-,root,root)
 %doc tests/README.txt tests/Interactive/README
 %{_datadir}/%{name}/tests/*
 
 %files utils
-%defattr(-,root,root)
-%attr(0755,root,root) %{_bindir}/%{name}*
+%{_bindir}/%{name}*
 %{_datadir}/applications/*%{name}-desktop.desktop
-%{_datadir}/icons/hicolor/*x*/apps/%{name}.png
+%{_iconsdir}/hicolor/*x*/apps/%{name}.png
 
-
-
-%changelog
-* Sun Nov 27 2011 Guilherme Moro <guilherme@mandriva.com> 1.3.0-20
-+ Revision: 733861
-- rebuild
-- imported package bsh
-
-  + Christophe Fergeau <cfergeau@mandriva.com>
-    - rebuild
-
-  + Thierry Vignaud <tv@mandriva.org>
-    - rebuild early 2009.0 package (before pixel changes)
-
-* Fri May 23 2008 Alexander Kurtakov <akurtakov@mandriva.org> 0:1.3.0-11.0.4mdv2009.0
-+ Revision: 210153
-- remove gnu-crypto references and disable gcj_support
-
-  + Olivier Blin <blino@mandriva.org>
-    - restore BuildRoot
-
-  + Thierry Vignaud <tv@mandriva.org>
-    - kill re-definition of %%buildroot on Pixel's request
-
-* Sun Dec 16 2007 Anssi Hannula <anssi@mandriva.org> 0:1.3.0-11.0.4mdv2008.1
-+ Revision: 120806
-- buildrequires java-rpmbuild
-
-* Sat Sep 15 2007 Anssi Hannula <anssi@mandriva.org> 0:1.3.0-11.0.3mdv2008.0
-+ Revision: 87263
-- rebuild to filter out autorequires of GCJ AOT objects
-- remove unnecessary Requires(post) on java-gcj-compat
-
-* Wed Sep 05 2007 David Walluck <walluck@mandriva.org> 0:1.3.0-11.0.2mdv2008.0
-+ Revision: 79666
-- add javadoc link
-- fix maven dir ownership
-- fix gcj scriptlets
-- remove file requires
-
-* Tue Aug 28 2007 David Walluck <walluck@mandriva.org> 0:1.3.0-11.0.1mdv2008.0
-+ Revision: 72560
-- link to bsf
-- fix Vendor and Distribution
-- sync with jpackage
-- Import bsh
-
-
-
-* Mon Aug 07 2006 David Walluck <walluck@mandriva.org> 0:1.3.0-9.1.1mdv2007.0
-- update and rebuild
-
-* Mon Jun 05 2006 David Walluck <walluck@mandriva.org> 0:1.3.0-6.3mdv2007.0
-- rebuild for libgcj.so.7
-- own %%{_libdir}/gcj/%%{name}
-
-* Fri Dec 02 2005 David Walluck <walluck@mandriva.org> 0:1.3.0-6.2mdk
-- add post scripts
-
-* Fri Dec 02 2005 David Walluck <walluck@mandriva.org> 0:1.3.0-6.1mdk
-- aot-compile
-
-* Sat Sep 10 2005 David Walluck <walluck@mandriva.org> 0:1.3.0-5.1mdk
-- release
-
-* Thu Jun 16 2005 Gary Benson <gbenson@redhat.com> 0:1.3.0-5jpp_1fc
-- Build into Fedora.
-
-* Thu Mar  4 2004 Frank Ch. Eigler <fche@redhat.com> 0:1.3.0-5jpp_1rh
-- RH vacuuming
-- added bsf build-prereq
-
-* Mon Jan 26 2004 David Walluck <david@anti-microsoft.org> 0:1.3.0-5jpp
-- really drop readline..patch
-
-* Sun Jan 25 2004 David Walluck <david@anti-microsoft.org> 0:1.3.0-4jpp
-- drop readline..patch
-
-* Wed Jan 21 2004 David Walluck <david@anti-microsoft.org> 0:1.3.0-3jpp
-- port libreadline-java patch to new bsh
-
-* Tue Jan 20 2004 David Walluck <david@anti-microsoft.org> 0:1.3.0-2jpp
-- add Distribution tag
-
-* Tue Jan 20 2004 David Walluck <david@anti-microsoft.org> 0:1.3.0-1jpp
-- 1.3.0
-- remove bsf patch (fixed upstream)
-- add epoch to demo package Requires
-
-* Fri Apr 12 2003 David Walluck <david@anti-microsoft.org> 0:1.2-0.b8.4jpp
-- fix strange permissions
-
-* Fri Apr 11 2003 David Walluck <david@anti-microsoft.org> 0:1.2-0.b8.3jpp
-- rebuild for JPackage 1.5
-- add bsf..patch
-
-* Sat Feb 01 2003 David Walluck <david@anti-microsoft.org> 1.2-0.b8.2jpp
-- remove servlet dependency (if anyone wants to add this as a separate
-  package and do the tomcat integration, be my guest)
-
-* Thu Jan 23 2003 David Walluck <david@anti-microsoft.org> 1.2-0.b8.1jpp
-- rename to bsh
-- add manual
-- add Changes.html to %%doc
-- add bsh and bshdoc scripts
-- add %%dir %%{_datadir}/%%{name} to main package
-- correct test interpreter and make bsh files executable
-
-* Mon Jan 21 2002 Guillaume Rousse <guillomovitch@users.sourceforge.net> 1.01-3jpp
-- really section macro
-
-* Sun Jan 20 2002 Guillaume Rousse <guillomovitch@users.sourceforge.net> 1.01-2jpp
-- additional sources in individual archives
-- versioned dir for javadoc
-- no dependencies for javadoc package
-- stricter dependency for demo package
-- section macro
-
-* Tue Dec 18 2001 Guillaume Rousse <guillomovitch@users.sourceforge.net> 1.01-1jpp
-- first JPackage release
