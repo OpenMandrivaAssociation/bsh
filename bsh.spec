@@ -1,7 +1,7 @@
 Summary:        Lightweight Scripting for Java
 Name:           bsh
 Version:        1.3.0
-Release:        26
+Release:        27
 License:        SPL or LGPLv2+
 Group:          Development/Java
 Url:            http://www.beanshell.org/
