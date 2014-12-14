@@ -31,9 +31,10 @@
 
 Name:           bsh
 Version:        1.3.0
-Release:        27.1%{?dist}
+Release:        27.2
 Epoch:          0
 Summary:        Lightweight Scripting for Java
+Group:		System/Libraries
 License:        (SPL or LGPLv2+) and Public Domain
 Source0:        %{name}-%{version}-src.tar.bz2
 #cvs -d:pserver:anonymous@beanshell.cvs.sourceforge.net:/cvsroot/beanshell login
@@ -221,14 +222,12 @@ dummy = posix.readlink(dir) and os.remove(dir)
 %posttrans utils
 /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
-%files
+%files -f .mfiles
 %doc src/License.txt
 %doc src/Changes.html src/README.txt
 %{_javadir}/*
 %dir %{_datadir}/%{name}
 %{_datadir}/%{name}/webapps
-%{_mavenpomdir}/*
-%{_mavendepmapfragdir}/%{name}
 
 %files manual
 %doc src/License.txt
