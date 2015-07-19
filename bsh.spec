@@ -31,7 +31,7 @@
 
 Name:           bsh
 Version:        1.3.0
-Release:        27.2
+Release:        27.3
 Epoch:          0
 Summary:        Lightweight Scripting for Java
 Group:		System/Libraries
