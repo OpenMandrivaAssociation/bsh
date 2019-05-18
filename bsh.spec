@@ -20,6 +20,7 @@ Patch2:		bsh-1.3.0-openjdk12.patch
 BuildRequires:  jdk-current
 BuildRequires:  ant bsf imagemagick desktop-file-utils
 BuildRequires:  servlet
+BuildRequires:	javapackages-local
 Requires:       bsf
 URL:            http://www.beanshell.org/
 BuildArch:      noarch
