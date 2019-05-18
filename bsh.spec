@@ -17,10 +17,9 @@ Source3:        %{name}-desktop.desktop
 Patch0:         %{name}-build.patch
 Patch1:         %{name}-xsl-fixes.patch
 Patch2:		bsh-1.3.0-openjdk12.patch
-BuildRequires:  java-devel
-BuildRequires:  ant, bsf, imagemagick, desktop-file-utils
+BuildRequires:  jdk-current
+BuildRequires:  ant bsf imagemagick desktop-file-utils
 BuildRequires:  servlet
-Requires:       java
 Requires:       bsf
 URL:            http://www.beanshell.org/
 BuildArch:      noarch
@@ -88,6 +87,8 @@ for i in backbutton forwardbutton homebutton remoteconsole upbutton; do
 done
 
 %build
+. %{_sysconfdir}/profile.d/90java.sh
+
 mkdir -p lib
 pushd lib
 ln -sf $(build-classpath bsf)
