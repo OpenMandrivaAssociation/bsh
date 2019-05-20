@@ -1,0 +1,13 @@
+diff -up beanshell-2.0b6/src/bsh/util/AWTConsole.java.omv~ beanshell-2.0b6/src/bsh/util/AWTConsole.java
+--- beanshell-2.0b6/src/bsh/util/AWTConsole.java.omv~	2019-05-20 17:41:47.978004206 +0200
++++ beanshell-2.0b6/src/bsh/util/AWTConsole.java	2019-05-20 17:42:19.515700346 +0200
+@@ -214,8 +214,7 @@ public class AWTConsole extends TextArea
+ 		Great.  What a piece of crap.
+ 	*/
+ 	public void setCaretPosition( int pos ) {
+-		((java.awt.peer.TextComponentPeer)getPeer()).setCaretPosition( 
+-			pos + countNLs() );
++		super.setCaretPosition( pos + countNLs() );
+ 	}
+ 
+ 	/*
