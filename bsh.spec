@@ -2,7 +2,7 @@
 
 Name:           bsh
 Version:        2.0
-Release:        1
+Release:        2
 Summary:        Lightweight Scripting for Java
 Group:		System/Libraries
 License:        (SPL or LGPLv2+) and Public Domain
