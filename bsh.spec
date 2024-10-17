@@ -16,7 +16,7 @@ BuildRequires:  jdk-current
 BuildRequires:  ant imagemagick desktop-file-utils
 BuildRequires:  jmod(javax.servlet)
 BuildRequires:	javapackages-local
-URL:            http://www.beanshell.org/
+URL:            https://www.beanshell.org/
 BuildArch:      noarch
 
 %description
